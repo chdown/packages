@@ -16,6 +16,7 @@ import io.flutter.plugins.videoplayer.VideoPlayer;
 import io.flutter.plugins.videoplayer.VideoPlayerCallbacks;
 import io.flutter.plugins.videoplayer.VideoPlayerOptions;
 import io.flutter.view.TextureRegistry.SurfaceProducer;
+import androidx.media3.exoplayer.DefaultRenderersFactory;
 
 /**
  * A subclass of {@link VideoPlayer} that adds functionality related to platform view as a way of
@@ -51,10 +52,12 @@ public class PlatformViewVideoPlayer extends VideoPlayer {
         asset.getMediaItem(),
         options,
         () -> {
-          ExoPlayer.Builder builder =
-              new ExoPlayer.Builder(context)
-                  .setMediaSourceFactory(asset.getMediaSourceFactory(context));
-          return builder.build();
+            DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context)
+                .setEnableDecoderFallback(true)
+                .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+             ExoPlayer.Builder builder = new ExoPlayer.Builder(context, renderersFactory)
+                .setMediaSourceFactory(asset.getMediaSourceFactory(context));
+             return builder.build();
         });
   }
 

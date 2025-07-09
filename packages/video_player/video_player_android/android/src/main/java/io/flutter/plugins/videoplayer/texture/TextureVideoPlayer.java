@@ -18,6 +18,7 @@ import io.flutter.plugins.videoplayer.VideoPlayer;
 import io.flutter.plugins.videoplayer.VideoPlayerCallbacks;
 import io.flutter.plugins.videoplayer.VideoPlayerOptions;
 import io.flutter.view.TextureRegistry.SurfaceProducer;
+import androidx.media3.exoplayer.DefaultRenderersFactory;
 
 /**
  * A subclass of {@link VideoPlayer} that adds functionality related to texture view as a way of
@@ -52,10 +53,15 @@ public final class TextureVideoPlayer extends VideoPlayer implements SurfaceProd
         asset.getMediaItem(),
         options,
         () -> {
-          ExoPlayer.Builder builder =
-              new ExoPlayer.Builder(context)
-                  .setMediaSourceFactory(asset.getMediaSourceFactory(context));
-          return builder.build();
+            // 1. 构造带硬解回退和 FFmpeg 扩展的 RenderersFactory
+            DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context)
+                .setEnableDecoderFallback(true)
+                .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+           // 2. 用自定义 factory 构造 ExoPlayer.Builder，并设置数据源工厂
+           ExoPlayer.Builder builder = new ExoPlayer.Builder(context, renderersFactory)
+                .setMediaSourceFactory(asset.getMediaSourceFactory(context));
+           // 3. 返回最终的 ExoPlayer 实例
+           return builder.build();
         });
   }
 
